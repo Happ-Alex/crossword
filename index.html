@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогресивний Кросворд</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            
+            .container {
+                padding: 40px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                margin-bottom: 30px;
+                font-size: 2em;
+            }
+        }
+
+        .locked-message {
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .locked-message {
+                padding: 40px;
+            }
+        }
+
+        .locked-message h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        @media (min-width: 768px) {
+            .locked-message h2 {
+                margin-bottom: 20px;
+                font-size: 1.5em;
+            }
+        }
+
+        .locked-message p {
+            font-size: 1em;
+            color: #666;
+            margin: 10px 0;
+        }
+
+        @media (min-width: 768px) {
+            .locked-message p {
+                font-size: 1.2em;
+            }
+        }
+
+        .locked-message .time-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        @media (min-width: 768px) {
+            .locked-message .time-info {
+                padding: 20px;
+                margin-top: 20px;
+                font-size: 1em;
+            }
+        }
+
+        .locked-message .time-info strong {
+            color: #667eea;
+        }
+
+        .locked-message .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .locked-message .icon {
+                font-size: 4em;
+                margin-bottom: 20px;
+            }
+        }
+
+        .progress {
+            background: #f0f0f0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .keyword-display {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .keyword-display {
+                padding: 20px;
+                margin-bottom: 30px;
+            }
+        }
+
+        .keyword-display h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        @media (min-width: 768px) {
+            .keyword-display h3 {
+                margin-bottom: 15px;
+                font-size: 1.2em;
+            }
+        }
+
+        .keyword-letters {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        @media (min-width: 768px) {
+            .keyword-letters {
+                gap: 10px;
+            }
+        }
+
+        .keyword-box {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid #19547b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #19547b;
+        }
+
+        @media (min-width: 768px) {
+            .keyword-box {
+                width: 50px;
+                height: 50px;
+                border: 3px solid #19547b;
+                font-size: 1.8em;
+            }
+        }
+
+        .keyword-box.empty {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .keyword-box.filled {
+            animation: fillIn 0.5s ease;
+        }
+
+        @keyframes fillIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .word-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @media (min-width: 768px) {
+            .word-section {
+                margin-bottom: 30px;
+                padding: 20px;
+            }
+        }
+
+        .word-section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        @media (min-width: 768px) {
+            .question {
+                font-size: 1.1em;
+                margin-bottom: 15px;
+            }
+        }
+
+        .hint {
+            font-size: 0.85em;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .hint {
+                font-size: 0.9em;
+                margin-bottom: 15px;
+            }
+        }
+
+        .word-input {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .word-input {
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .letter-box {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .letter-box {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5em;
+            }
+        }
+
+        .letter-box.key-letter {
+            border: 3px solid #ffd89b;
+            background: #fff9e6;
+        }
+
+        .letter-box:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            transform: scale(1.1);
+        }
+
+        .letter-box.correct {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .letter-box.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 1.1em;
+            min-height: 30px;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .completion {
+            text-align: center;
+            display: none;
+        }
+
+        .completion.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .completion h2 {
+            color: #4caf50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        @media (min-width: 768px) {
+            .completion h2 {
+                margin-bottom: 20px;
+                font-size: 2em;
+            }
+        }
+
+        .final-keyword {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        @media (min-width: 768px) {
+            .final-keyword {
+                padding: 30px;
+            }
+        }
+
+        .final-keyword h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        @media (min-width: 768px) {
+            .final-keyword h3 {
+                margin-bottom: 15px;
+                font-size: 1.5em;
+            }
+        }
+
+        .final-keyword .keyword-word {
+            font-size: 1.8em;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        @media (min-width: 768px) {
+            .final-keyword .keyword-word {
+                font-size: 2.5em;
+                letter-spacing: 5px;
+            }
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .stats p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧩 Прогресивний Кросворд</h1>
+        
+        <div id="lockedScreen" style="display: none;">
+            <div class="locked-message">
+                <div class="icon">🔒</div>
+                <h2>Кросворд заблокований</h2>
+                <p id="lockMessage"></p>
+            </div>
+        </div>
+
+        <div id="gameScreen">
+            <div class="keyword-display">
+                <h3>🔑 Ключове слово</h3>
+                <div class="keyword-letters" id="keywordLetters"></div>
+            </div>
+
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div id="gameArea"></div>
+        </div>
+        
+        <div class="completion" id="completion">
+            <h2>🎉 Вітаємо!</h2>
+            <p>Ви успішно розв'язали всі слова!</p>
+            
+            <div class="final-keyword">
+                <h3>Ключове слово:</h3>
+                <div class="keyword-word" id="finalKeyword"></div>
+            </div>
+            
+            <div class="stats" id="stats"></div>
+            <button class="btn" onclick="location.reload()">Почати знову</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== НАЛАШТУВАННЯ ЧАСУ ====================
+        const AVAILABLE_FROM = {
+            year: 2025,
+            month: 9,  // Жовтень (0 = січень)
+            day: 16,
+            hour: 0,
+            minute: 0
+        };
+
+        const AVAILABLE_TO = {
+            year: 2025,
+            month: 9,  // Жовтень
+            day: 17,
+            hour: 23,
+            minute: 59
+        };
+
+        // ==================== ДАНІ КРОСВОРДА ====================
+        const KEYWORD = "СТОЛИЦЯ";  // Ключове слово (7 літер)
+        
+        // Кожне слово містить одну літеру з ключового слова
+        const crosswordData = [
+            { 
+                word: "ЛОХИНА", 
+                question: "Ягода",
+                keyLetterIndex: 3,  // Літера 'Н' з позиції 5
+                keywordPosition: 4  // Йде в позицію 4 ключового слова: СТОЛ[И]ЦЯ
+            },
+            { 
+                word: "ТАРАС", 
+                question: "Ім'я великого українського поета Шевченка",
+                keyLetterIndex: 0,  // Літера 'Т' з позиції 0
+                keywordPosition: 1  // Йде в позицію 1: С[Т]ОЛИЦЯ
+            },
+            { 
+                word: "БОРЩ", 
+                question: "Традиційна українська страва",
+                keyLetterIndex: 1,  // Літера 'O' з позиції 1
+                keywordPosition: 2  // Йде в позицію 2: СТ[О]ЛИЦЯ
+            },
+            { 
+                word: "СОНЦЕ", 
+                question: "Небесне світило",
+                keyLetterIndex: 0,  // Літера 'С' з позиції 0
+                keywordPosition: 0  // Йде в позицію 0: [С]ТОЛИЦЯ
+            },
+            { 
+                word: "ЯЛИНКА", 
+                question: "Новорічне дерево",
+                keyLetterIndex: 0,  // Літера 'А' з позиції 4
+                keywordPosition: 6  // Йде в позицію 6: СТОЛИЦ[Я]
+            },
+            { 
+                word: "ХЛІБ", 
+                question: "Всьому голова",
+                keyLetterIndex: 1,  // Літера 'Л' з позиції 1
+                keywordPosition: 3  // Йде в позицію 3: СТО[Л]ИЦЯ
+            },
+            { 
+                word: "ЦИРК", 
+                question: "Місце, де виступають клоуни",
+                keyLetterIndex: 0,  // Літера 'A' -> 'Ц'
+                keywordPosition: 5  // Йде в позицію 5: СТОЛИ[Ц]Я
+            }
+        ];
+
+        let currentWordIndex = 0;
+        let attempts = 0;
+        let startTime = Date.now();
+        let collectedLetters = Array(KEYWORD.length).fill('');
+
+        function checkAvailability() {
+            const now = new Date();
+            const startDate = new Date(
+                AVAILABLE_FROM.year,
+                AVAILABLE_FROM.month,
+                AVAILABLE_FROM.day,
+                AVAILABLE_FROM.hour,
+                AVAILABLE_FROM.minute
+            );
+            const endDate = new Date(
+                AVAILABLE_TO.year,
+                AVAILABLE_TO.month,
+                AVAILABLE_TO.day,
+                AVAILABLE_TO.hour,
+                AVAILABLE_TO.minute
+            );
+
+            if (now < startDate) {
+                showLockedScreen(`Кросворд буде доступний з ${formatDate(startDate)}`);
+                return false;
+            }
+
+            if (now > endDate) {
+                showLockedScreen(`Кросворд був доступний до ${formatDate(endDate)}`);
+                return false;
+            }
+
+            return true;
+        }
+
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes}`;
+        }
+
+        function showLockedScreen(message) {
+            const startDate = new Date(
+                AVAILABLE_FROM.year,
+                AVAILABLE_FROM.month,
+                AVAILABLE_FROM.day,
+                AVAILABLE_FROM.hour,
+                AVAILABLE_FROM.minute
+            );
+            const endDate = new Date(
+                AVAILABLE_TO.year,
+                AVAILABLE_TO.month,
+                AVAILABLE_TO.day,
+                AVAILABLE_TO.hour,
+                AVAILABLE_TO.minute
+            );
+
+            document.getElementById('lockMessage').innerHTML = `
+                ${message}
+                <div class="time-info">
+                    <p><strong>Кросворд доступний:</strong></p>
+                    <p>📅 З: ${formatDate(startDate)}</p>
+                    <p>📅 До: ${formatDate(endDate)}</p>
+                </div>
+            `;
+            document.getElementById('lockedScreen').style.display = 'block';
+            document.getElementById('gameScreen').style.display = 'none';
+        }
+
+        function initKeywordDisplay() {
+            const container = document.getElementById('keywordLetters');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < KEYWORD.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'keyword-box empty';
+                box.id = `keyword-${i}`;
+                container.appendChild(box);
+            }
+        }
+
+        function updateKeywordDisplay(position, letter) {
+            const box = document.getElementById(`keyword-${position}`);
+            box.textContent = letter;
+            box.classList.remove('empty');
+            box.classList.add('filled');
+        }
+
+        function init() {
+            if (!checkAvailability()) {
+                return;
+            }
+
+            initKeywordDisplay();
+            displayWord(currentWordIndex);
+            updateProgress();
+        }
+
+        function displayWord(index) {
+            const gameArea = document.getElementById('gameArea');
+            const data = crosswordData[index];
+            
+            const section = document.createElement('div');
+            section.className = 'word-section active';
+            section.id = `word-${index}`;
+            
+            section.innerHTML = `
+                <div class="question">${index + 1}. ${data.question}</div>
+                <div class="hint">💡 Одна літера є частиною ключового слова</div>
+                <div class="word-input" id="input-${index}">
+                    ${data.word.split('').map((_, i) => 
+                        `<input type="text" class="letter-box ${i === data.keyLetterIndex ? 'key-letter' : ''}" maxlength="1" data-index="${i}" />`
+                    ).join('')}
+                </div>
+                <button class="btn" onclick="checkWord(${index})">Перевірити</button>
+                <div class="message" id="message-${index}"></div>
+            `;
+            
+            gameArea.appendChild(section);
+            
+            const inputs = section.querySelectorAll('.letter-box');
+            inputs.forEach((input, i) => {
+                input.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                    if (e.target.value && i < inputs.length - 1) {
+                        inputs[i + 1].focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                        inputs[i - 1].focus();
+                    }
+                    if (e.key === 'Enter') {
+                        checkWord(index);
+                    }
+                });
+            });
+            
+            inputs[0].focus();
+        }
+
+        function checkWord(index) {
+            attempts++;
+            const data = crosswordData[index];
+            const inputs = document.querySelectorAll(`#input-${index} .letter-box`);
+            const message = document.getElementById(`message-${index}`);
+            
+            let userWord = '';
+            inputs.forEach(input => {
+                userWord += input.value.toUpperCase();
+            });
+            
+            if (userWord.length !== data.word.length) {
+                message.textContent = '⚠️ Заповніть всі літери!';
+                message.className = 'message error';
+                return;
+            }
+            
+            if (userWord === data.word) {
+                inputs.forEach(input => {
+                    input.classList.add('correct');
+                    input.disabled = true;
+                });
+                message.textContent = '✅ Правильно!';
+                message.className = 'message success';
+                
+                // Додаємо літеру до ключового слова
+                const keyLetter = data.word[data.keyLetterIndex];
+                const keywordPosition = data.keywordPosition;
+                
+                collectedLetters[keywordPosition] = keyLetter;
+                
+                // Затримка перед показом літери в ключовому слові
+                setTimeout(() => {
+                    updateKeywordDisplay(keywordPosition, keyLetter);
+                }, 500);
+                
+                document.querySelector(`#word-${index} .btn`).disabled = true;
+                
+                currentWordIndex++;
+                updateProgress();
+                
+                if (currentWordIndex < crosswordData.length) {
+                    setTimeout(() => {
+                        displayWord(currentWordIndex);
+                    }, 1500);
+                } else {
+                    setTimeout(showCompletion, 2000);
+                }
+            } else {
+                inputs.forEach(input => {
+                    input.classList.add('incorrect');
+                    setTimeout(() => input.classList.remove('incorrect'), 500);
+                });
+                message.textContent = '❌ Неправильно, спробуйте ще раз!';
+                message.className = 'message error';
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentWordIndex / crosswordData.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showCompletion() {
+            const endTime = Date.now();
+            const timeSpent = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeSpent / 60);
+            const seconds = timeSpent % 60;
+            
+            document.getElementById('gameScreen').style.display = 'none';
+            const completion = document.getElementById('completion');
+            completion.classList.add('show');
+            
+            document.getElementById('finalKeyword').textContent = KEYWORD;
+            
+            document.getElementById('stats').innerHTML = `
+                <p><strong>Кількість слів:</strong> ${crosswordData.length}</p>
+                <p><strong>Спроб:</strong> ${attempts}</p>
+                <p><strong>Час:</strong> ${minutes}хв ${seconds}с</p>
+            `;
+        }
+
+        init();
+    </script>
+</body>
+</html>
